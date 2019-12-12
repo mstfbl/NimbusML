@@ -37,43 +37,25 @@ class TestDatasetTransformerWithPredictorModel(unittest.TestCase):
         test_df_updated = test_df.drop(['c0'], axis=1)
         rf_max = 4.5
         # Create combined pipeline
-        print("---------------WORKING PIPELINE---------------")
         transform_pipeline = Pipeline([RangeFilter(min=0.0, max=rf_max) << 'c2'])
-        print("@@@@@@@@LINE 42 - Before calling transform_pipeline.fit")
         transform_pipeline.fit(train_df_updated)
-        print("@@@@@@@@LINE 44")
         combined_pipeline = Pipeline([
             DatasetTransformer(transform_model=transform_pipeline.model),
             OnlineGradientDescentRegressor(label='c2', feature=['c1'])
         ], random_state=seed)
-        print("@@@@@@@@LINE 49 - Before calling combined_pipeline.fit")
         combined_pipeline.fit(train_df_updated)
-        print("---------------Transform results---------------")
         resultTransform = combined_pipeline.transform(test_df_updated)
-        print("@@@@@@@@LINE 53")
-        print(resultTransform)
+        #print(resultTransform)
 
-        print("---------------Predict results---------------")
-        resultPredict = combined_pipeline.predict(test_df_updated)
-        print("@@@@@@@@LINE 58")
-        print(resultPredict)
-
-        print("---------------NON-WORKING PIPELINE 1---------------")
         transform_pipeline2 = Pipeline([RangeFilter(min=0.0, max=rf_max) << 'c2', OnlineGradientDescentRegressor(label='c2', feature=['c1'])], random_state=seed)
-        print("@@@@@@@@LINE 63 - Before calling transform_pipeline2.fit")
         transform_pipeline2.fit(train_df_updated)
-        print("@@@@@@@@LINE 65")
-        print("---------------NON-WORKING PIPELINE 2---------------")
         combined_pipeline2 = Pipeline([DatasetTransformer(transform_model=transform_pipeline2.model)])
-        print("@@@@@@@@LINE 68")
 
-        print("---------------Broken pipeline results---------------")
-        print("@@@@@@@@LINE 71 - Before calling combined_pipeline2.fit")
         combined_pipeline2.fit(train_df_updated)
-        print("@@@@@@@@LINE 73 - Before calling combined_pipeline2.transform")
         resultTransform2 = combined_pipeline2.transform(test_df_updated)
-        print("@@@@@@@@LINE 75")
-        print(resultTransform2)
+        #print(resultTransform2)
+
+        self.assertTrue(resultTransform.equals(resultTransform2))
 
 if __name__ == '__main__':
     unittest.main()
