@@ -58,7 +58,7 @@ class TestDatasetTransformerWithPredictorModel(unittest.TestCase):
 
         for i in range(0, len(resultTransform.index)):
             for j in range(0, len(resultTransform.columns)):
-                self.assertTrue(resultTransform.values[i,j].equals(resultTransform2.values[i,j]))
+                self.assertTrue(resultTransform.values[i,j] == resultTransform2.values[i,j])
 
 if __name__ == '__main__':
     unittest.main()
