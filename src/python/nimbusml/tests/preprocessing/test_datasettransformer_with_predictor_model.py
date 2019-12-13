@@ -45,7 +45,6 @@ class TestDatasetTransformerWithPredictorModel(unittest.TestCase):
         ], random_state=seed)
         combined_pipeline.fit(train_df_updated)
         resultTransform = combined_pipeline.transform(test_df_updated)
-        print(resultTransform)
 
         transform_pipeline2 = Pipeline([
             RangeFilter(min=0.0, max=rf_max) << 'c2', 
@@ -56,9 +55,10 @@ class TestDatasetTransformerWithPredictorModel(unittest.TestCase):
 
         combined_pipeline2.fit(train_df_updated)
         resultTransform2 = combined_pipeline2.transform(test_df_updated)
-        print(resultTransform2)
 
-        self.assertTrue(resultTransform.equals(resultTransform2))
+        for i in range(0, len(resultTransform.index)):
+            for j in range(0, len(resultTransform.columns)):
+                self.assertTrue(resultTransform.values[i,j].equals(resultTransform2.values[i,j]))
 
 if __name__ == '__main__':
     unittest.main()
