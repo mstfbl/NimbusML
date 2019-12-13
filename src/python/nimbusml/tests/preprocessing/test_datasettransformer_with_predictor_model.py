@@ -45,15 +45,18 @@ class TestDatasetTransformerWithPredictorModel(unittest.TestCase):
         ], random_state=seed)
         combined_pipeline.fit(train_df_updated)
         resultTransform = combined_pipeline.transform(test_df_updated)
-        #print(resultTransform)
+        print(resultTransform)
 
-        transform_pipeline2 = Pipeline([RangeFilter(min=0.0, max=rf_max) << 'c2', OnlineGradientDescentRegressor(label='c2', feature=['c1'])], random_state=seed)
+        transform_pipeline2 = Pipeline([
+            RangeFilter(min=0.0, max=rf_max) << 'c2', 
+            OnlineGradientDescentRegressor(label='c2', feature=['c1'])
+        ], random_state=seed)
         transform_pipeline2.fit(train_df_updated)
         combined_pipeline2 = Pipeline([DatasetTransformer(transform_model=transform_pipeline2.model)])
 
         combined_pipeline2.fit(train_df_updated)
         resultTransform2 = combined_pipeline2.transform(test_df_updated)
-        #print(resultTransform2)
+        print(resultTransform2)
 
         self.assertTrue(resultTransform.equals(resultTransform2))
 
