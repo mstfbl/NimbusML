@@ -3,6 +3,7 @@
 from nimbusml import Pipeline, FileDataStream
 from nimbusml.datasets import get_dataset
 from nimbusml.linear_model import AveragedPerceptronBinaryClassifier
+from nimbusml.model_selection import CV
 
 # data input (as a FileDataStream)
 path = get_dataset('infert').as_filepath()
@@ -35,3 +36,13 @@ print(predictions.head())
 print(metrics)
 #        AUC  Accuracy  Positive precision  Positive recall  ...
 # 0  0.705038   0.71371                 0.7         0.253012  ...
+
+# Do 3-fold cross-validation
+cv_results = CV(pipeline).fit(data, cv=3)
+
+# print summary statistic of metrics
+print(cv_results['metrics_summary'])
+#                          AUC  Accuracy  Positive precision  ...  Log-loss reduction  F1 Score     AUPRC
+# Fold                                                        ...
+# Average             0.703795  0.726026            0.700000  ...            0.092784  0.476888  0.560459
+# Standard Deviation  0.050457  0.043245            0.141421  ...            0.036691  0.068694  0.079057

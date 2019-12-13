@@ -4,6 +4,7 @@ from nimbusml import Pipeline, FileDataStream
 from nimbusml.datasets import get_dataset
 from nimbusml.feature_extraction.categorical import OneHotVectorizer
 from nimbusml.linear_model import OrdinaryLeastSquaresRegressor
+from nimbusml.model_selection import CV
 
 # data input (as a FileDataStream)
 path = get_dataset('infert').as_filepath()
@@ -40,3 +41,13 @@ print(predictions.head())
 print(metrics)
 #    L1(avg)    L2(avg)  RMS(avg)  Loss-fn(avg)  R Squared
 # 0  4.152171  24.428729  4.942543     24.428729   0.110639
+
+# Do 3-fold cross-validation
+cv_results = CV(pipeline).fit(data, cv=3)
+
+# print summary statistic of metrics
+print(cv_results['metrics_summary'])
+#                      L1(avg)    L2(avg)  RMS(avg)  Loss-fn(avg)  R Squared
+# Fold
+# Average             4.222846  25.863099  5.079351     25.863099   0.045449
+# Standard Deviation  0.277780   2.598405  0.251576      2.598405   0.092900

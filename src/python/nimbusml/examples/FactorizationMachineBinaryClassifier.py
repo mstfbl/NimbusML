@@ -5,6 +5,7 @@ from nimbusml import Pipeline, FileDataStream
 from nimbusml.datasets import get_dataset
 from nimbusml.decomposition import FactorizationMachineBinaryClassifier
 from nimbusml.feature_extraction.categorical import OneHotVectorizer
+from nimbusml.model_selection import CV
 
 # data input (as a FileDataStream)
 path = get_dataset('infert').as_filepath()
@@ -41,3 +42,13 @@ print(predictions.head())
 print(metrics)
 #        AUC  Accuracy  Positive precision  Positive recall  ...
 # 0  0.609639  0.665323                   0                0  ...
+
+# Do 3-fold cross-validation
+cv_results = CV(pipeline).fit(data, cv=3)
+
+# print summary statistic of metrics
+print(cv_results['metrics_summary'])
+#                          AUC  Accuracy  Positive precision  ...
+# Fold                                                        ...
+# Average             0.424500  0.665344                   0  ...
+# Standard Deviation  0.073805  0.010549                   0  ...
