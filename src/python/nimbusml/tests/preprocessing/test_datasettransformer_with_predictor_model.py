@@ -61,9 +61,7 @@ class TestDatasetTransformerWithPredictorModel(unittest.TestCase):
         os.remove(transform_pipeline1.model)
         os.remove(transform_pipeline2.model)
 
-        for i in range(0, len(result_1.index)):
-            for j in range(0, len(result_1.columns)):
-                self.assertTrue(result_1.values[i,j] == result_2.values[i,j])
+        self.assertEquals(result_1.sum().sum(), result_2.sum().sum())
 
     def test_one_dataset_transformer_at_end_with_transformers_before(self):
         rf_max = 4.5
@@ -81,7 +79,7 @@ class TestDatasetTransformerWithPredictorModel(unittest.TestCase):
         # Create combined pipeline
         transform_pipeline1 = Pipeline([
             RangeFilter(min=0.0, max=rf_max) << 'c2'
-        ], random_state=seed)
+        ])
         transform_pipeline1.fit(train_df)
 
         transform_pipeline2 = Pipeline([
@@ -101,9 +99,7 @@ class TestDatasetTransformerWithPredictorModel(unittest.TestCase):
 
         result_2 = combined_pipeline.transform(test_df)
 
-        for i in range(0, len(result_1.index)):
-            for j in range(0, len(result_1.columns)):
-                self.assertTrue(result_1.values[i,j] == result_2.values[i,j])
+        self.assertEquals(result_1.sum().sum(), result_2.sum().sum())
 
     def test_get_fit_info(self):
         transform_pipeline = Pipeline([
