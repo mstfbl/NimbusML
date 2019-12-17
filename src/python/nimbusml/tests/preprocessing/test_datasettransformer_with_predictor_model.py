@@ -105,16 +105,6 @@ class TestDatasetTransformerWithPredictorModel(unittest.TestCase):
     def test_dataset_transformer_at_end_with_transformers_before_and_predictor_after(self):
         rf_max = 4.5
 
-        # Create reference pipeline
-        std_pipeline = Pipeline([
-            RangeFilter(min=0.0, max=rf_max) << 'c2',
-            OneHotVectorizer() << 'c0',
-            OnlineGradientDescentRegressor(label='c2', feature=['c0'])
-        ], random_state=seed)
-
-        std_pipeline.fit(train_df)
-        result_1 = std_pipeline.transform(test_df)
-
         # Create combined pipeline
         transform_pipeline1 = Pipeline([
             RangeFilter(min=0.0, max=rf_max) << 'c2'
@@ -130,17 +120,15 @@ class TestDatasetTransformerWithPredictorModel(unittest.TestCase):
         combined_pipeline = Pipeline([
             DatasetTransformer(transform_model=transform_pipeline1.model),
             DatasetTransformer(transform_model=transform_pipeline2.model),
+            OnlineGradientDescentRegressor(label='c1', feature=['c2'])
         ], random_state=seed)
         combined_pipeline.fit(train_df)
 
         os.remove(transform_pipeline1.model)
-        os.remove(transform_pipeline2.model)
 
-        result_2 = combined_pipeline.transform(test_df)
-        print(result_1)
-        print(result_2)
+        result = combined_pipeline.transform(test_df)
 
-        self.assertEquals(result_1.sum().sum(), result_2.sum().sum())
+        self.assertTrue(round(result.sum().sum().item(), 5) == 20.225)
 
     def test_get_fit_info(self):
         transform_pipeline = Pipeline([
