@@ -33,7 +33,7 @@ test_df = pd.DataFrame(test_data).astype({'c1': np.float64,
 
 class TestDatasetTransformerWithPredictorModel(unittest.TestCase):
 
-    def test_dataset_transformer_at_end(self):
+    def test_dataset_transformer_by_itself(self):
         train_df_updated = train_df.drop(['c0'], axis=1)
         test_df_updated = test_df.drop(['c0'], axis=1)
         rf_max = 4.5
@@ -45,21 +45,17 @@ class TestDatasetTransformerWithPredictorModel(unittest.TestCase):
             OnlineGradientDescentRegressor(label='c2', feature=['c1'])
         ], random_state=seed)
         combined_pipeline_1.fit(train_df_updated)
-        result_1 = combined_pipeline_1.transform(test_df_updated)
-        print(result_1)
+        result_1 = combined_pipeline_1.predict(test_df_updated)
 
         transform_pipeline_2 = Pipeline([
+            RangeFilter(min=0.0, max=rf_max) << 'c2', 
             OnlineGradientDescentRegressor(label='c2', feature=['c1'])
         ], random_state=seed)
         transform_pipeline_2.fit(train_df_updated)
         combined_pipeline_2 = Pipeline([
-            RangeFilter(min=0.0, max=rf_max) << 'c2', 
             DatasetTransformer(transform_model=transform_pipeline_2.model)
         ])
-
-        combined_pipeline_2.fit(train_df_updated)
-        result_2 = combined_pipeline_2.transform(test_df_updated)
-        print(result_2)
+        result_2 = combined_pipeline_1.transform(test_df_updated)
 
         os.remove(transform_pipeline_1.model)
         os.remove(transform_pipeline_2.model)
@@ -77,7 +73,7 @@ class TestDatasetTransformerWithPredictorModel(unittest.TestCase):
         ], random_state=seed)
 
         std_pipeline.fit(train_df)
-        result_1 = std_pipeline.transform(test_df)
+        result_1 = std_pipeline.predict(test_df)
 
         # Create combined pipeline
         transform_pipeline1 = Pipeline([
@@ -128,10 +124,13 @@ class TestDatasetTransformerWithPredictorModel(unittest.TestCase):
 
         os.remove(transform_pipeline1.model)
 
-        result = combined_pipeline.transform(test_df)
+        result = combined_pipeline.predict(test_df)
 
-        self.assertTrue(round(result.sum().sum().item(), 5) == 20.225)
+        print(result)
 
+        self.assertTrue(round(result["Score"][0], 6) == 0.750616)
+        self.assertTrue(round(result["Score"][1], 6) == 0.801374)
+        
     def test_get_fit_info(self):
         transform_pipeline = Pipeline([
             RangeFilter(min=0.0, max=4.5) << 'c2',
