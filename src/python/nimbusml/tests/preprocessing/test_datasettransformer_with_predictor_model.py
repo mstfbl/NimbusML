@@ -38,29 +38,31 @@ class TestDatasetTransformerWithPredictorModel(unittest.TestCase):
         test_df_updated = test_df.drop(['c0'], axis=1)
         rf_max = 4.5
         # Create combined pipeline
-        transform_pipeline1 = Pipeline([RangeFilter(min=0.0, max=rf_max) << 'c2'])
-        transform_pipeline1.fit(train_df_updated)
-        combined_pipeline = Pipeline([
-            DatasetTransformer(transform_model=transform_pipeline1.model),
+        transform_pipeline_1 = Pipeline([RangeFilter(min=0.0, max=rf_max) << 'c2'])
+        transform_pipeline_1.fit(train_df_updated)
+        combined_pipeline_1 = Pipeline([
+            DatasetTransformer(transform_model=transform_pipeline_1.model),
             OnlineGradientDescentRegressor(label='c2', feature=['c1'])
         ], random_state=seed)
-        combined_pipeline.fit(train_df_updated)
-        result_1 = combined_pipeline.transform(test_df_updated)
+        combined_pipeline_1.fit(train_df_updated)
+        result_1 = combined_pipeline_1.transform(test_df_updated)
+        print(result_1)
 
-        transform_pipeline2 = Pipeline([
-            RangeFilter(min=0.0, max=rf_max) << 'c2', 
+        transform_pipeline_2 = Pipeline([
             OnlineGradientDescentRegressor(label='c2', feature=['c1'])
         ], random_state=seed)
-        transform_pipeline2.fit(train_df_updated)
-        combined_pipeline2 = Pipeline([
-            DatasetTransformer(transform_model=transform_pipeline2.model)
+        transform_pipeline_2.fit(train_df_updated)
+        combined_pipeline_2 = Pipeline([
+            RangeFilter(min=0.0, max=rf_max) << 'c2', 
+            DatasetTransformer(transform_model=transform_pipeline_2.model)
         ])
 
-        combined_pipeline2.fit(train_df_updated)
-        result_2 = combined_pipeline2.transform(test_df_updated)
+        combined_pipeline_2.fit(train_df_updated)
+        result_2 = combined_pipeline_2.transform(test_df_updated)
+        print(result_2)
 
-        os.remove(transform_pipeline1.model)
-        os.remove(transform_pipeline2.model)
+        os.remove(transform_pipeline_1.model)
+        os.remove(transform_pipeline_2.model)
 
         self.assertEquals(result_1.sum().sum(), result_2.sum().sum())
 
