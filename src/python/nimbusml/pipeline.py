@@ -819,13 +819,9 @@ class Pipeline:
                     model=output_predictor_model)
                 output_predictor_model_node._implicit = True
                 graph_nodes.append(output_predictor_model_node)
-        elif learner_node == None and transform_models[-1].startswith("$dataset_transformer_model"):
-            single_model_node = transforms_modelcombiner(
-                models=transform_models,
-                output_model=output_model)
-            single_model_node._implicit = True
-            graph_nodes.append(single_model_node)
-        elif len(transform_models) > 1:
+        elif len(transform_models) > 1 or \
+            (learner_node == None and len(transform_models) > 0 and \
+            transform_models[-1].startswith("$dataset_transformer_model")):
             combine_model_node = transforms_modelcombiner(
                 models=transform_models,
                 output_model=output_model)
