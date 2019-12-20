@@ -18,6 +18,9 @@ from sklearn.utils.testing import assert_equal
 
 class TestNGramFeaturizer(unittest.TestCase):
 
+    @unittest.skip("Disabled due to bug on Mac Py 2.7, more info: \
+    https://github.com/microsoft/NimbusML/issues/366, \
+    https://github.com/microsoft/NimbusML/pull/362")
     def test_ngramfeaturizer(self):
         np.random.seed(0)
         train_file = get_dataset('wiki_detox_train').as_filepath()
