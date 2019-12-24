@@ -30,14 +30,62 @@ test_data = {'c0': ['a', 'b', 'b'],
 test_df = pd.DataFrame(test_data).astype({'c1': np.float64,
                                           'c2': np.float64})
 
+train_df_updated = train_df.drop(['c0'], axis=1)
+test_df_updated = test_df.drop(['c0'], axis=1)
+rf_max = 4.5
+
 
 class TestDatasetTransformerWithPredictorModel(unittest.TestCase):
 
+    def temp(self):
+        transform_pipeline_1 = Pipeline([RangeFilter(min=0.0, max=rf_max) << 'c2'])
+        transform_pipeline_1.fit(train_df_updated)
+        combined_pipeline_1 = Pipeline([
+            DatasetTransformer(transform_model=transform_pipeline_1.model),
+            OnlineGradientDescentRegressor(label='c2', feature=['c1'])
+        ], random_state=seed)
+        combined_pipeline_1.fit(train_df_updated)
+        result_1 = combined_pipeline_1.transform(test_df_updated)
+        print(result_1)
+
+    def temp2(self):
+        transform_pipeline_2 = Pipeline([
+            RangeFilter(min=0.0, max=rf_max) << 'c2', 
+            OnlineGradientDescentRegressor(label='c2', feature=['c1'])
+        ], random_state=seed)
+        transform_pipeline_2.fit(train_df_updated)
+        combined_pipeline_2 = Pipeline([
+            DatasetTransformer(transform_model=transform_pipeline_2.model)
+        ])
+        combined_pipeline_2.fit(train_df_updated)
+        result_2 = combined_pipeline_2.transform(test_df_updated)
+        print(result_2)
+
+    def temp3(self):
+        transform_pipeline1 = Pipeline([
+            RangeFilter(min=0.0, max=rf_max) << 'c2'
+        ], random_state=seed)
+        transform_pipeline1.fit(train_df)
+
+        transform_pipeline2 = Pipeline([
+            OneHotVectorizer() << 'c0',
+            OnlineGradientDescentRegressor(label='c2', feature=['c0'])
+            ], random_state=seed)
+        transform_pipeline2.fit(train_df)
+
+        combined_pipeline = Pipeline([
+            DatasetTransformer(transform_model=transform_pipeline1.model),
+            DatasetTransformer(transform_model=transform_pipeline2.model)
+        ], random_state=seed)
+        combined_pipeline.fit(train_df)
+
+        os.remove(transform_pipeline1.model)
+        os.remove(transform_pipeline2.model)
+
+        result_2 = combined_pipeline.transform(test_df)
+        print(result_2)
+
     def test_dataset_transformer_by_itself(self):
-        train_df_updated = train_df.drop(['c0'], axis=1)
-        test_df_updated = test_df.drop(['c0'], axis=1)
-        rf_max = 4.5
-        # Create combined pipeline
         transform_pipeline_1 = Pipeline([RangeFilter(min=0.0, max=rf_max) << 'c2'])
         transform_pipeline_1.fit(train_df_updated)
         combined_pipeline_1 = Pipeline([
@@ -55,7 +103,8 @@ class TestDatasetTransformerWithPredictorModel(unittest.TestCase):
         combined_pipeline_2 = Pipeline([
             DatasetTransformer(transform_model=transform_pipeline_2.model)
         ])
-        result_2 = combined_pipeline_1.transform(test_df_updated)
+        combined_pipeline_2.fit(train_df_updated)
+        result_2 = combined_pipeline_2.transform(test_df_updated)
 
         os.remove(transform_pipeline_1.model)
         os.remove(transform_pipeline_2.model)
@@ -63,9 +112,6 @@ class TestDatasetTransformerWithPredictorModel(unittest.TestCase):
         self.assertEquals(result_1.sum().sum(), result_2.sum().sum())
 
     def test_dataset_transformer_at_end_with_transformers_before(self):
-        rf_max = 4.5
-
-        # Create reference pipeline
         std_pipeline = Pipeline([
             RangeFilter(min=0.0, max=rf_max) << 'c2',
             OneHotVectorizer() << 'c0',
@@ -101,9 +147,6 @@ class TestDatasetTransformerWithPredictorModel(unittest.TestCase):
         self.assertEquals(result_1.sum().sum(), result_2.sum().sum())
 
     def test_dataset_transformer_at_end_with_transformers_before_and_predictor_after(self):
-        rf_max = 4.5
-
-        # Create combined pipeline
         transform_pipeline1 = Pipeline([
             RangeFilter(min=0.0, max=rf_max) << 'c2'
         ], random_state=seed)
