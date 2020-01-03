@@ -178,5 +178,28 @@ namespace Microsoft.ML.DotNetBridge
                 };
 
         }
-    }
+
+		public sealed class ApplyExTransformModelInput : TransformInputBase
+		{
+			[Argument(ArgumentType.Required, HelpText = "Transform model", SortOrder = 2)]
+			public TransformModel TransformModel;
+
+			[Argument(ArgumentType.Required, HelpText = "Predictor model", SortOrder = 2)]
+			public PredictorModel PredictorModel;
+		}
+
+		public sealed class ApplyExTransformModelOutput
+		{
+			[TlcModule.Output(Desc = "Transformed dataset", SortOrder = 1)]
+			public IDataView OutputData;
+		}
+
+		[TlcModule.EntryPoint(Name = "Models.DatasetTransformerEx", Desc = "Transform a dataset that may have a predictor model")]
+		public static ApplyExTransformModelOutput Apply(IHostEnvironment env, ApplyExTransformModelInput input)
+		{
+			ApplyExTransformModelOutput transformModelOutput =
+				ApplyExTransformModelOutput() { OutputData = input.TransformModel.Apply(env, input.Data) };
+			return transformModelOutput;
+		}
+	}
 }
